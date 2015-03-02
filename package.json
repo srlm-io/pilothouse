@@ -1,0 +1,35 @@
+{
+  "name": "pilothouse",
+  "version": "0.0.1",
+  "description": "Autonomous Sailboat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/srlmproductions/pilothouse.git"
+  },
+  "keywords": [
+    "robot",
+    "sailboat",
+    "autonomous",
+    "nodejs"
+  ],
+  "author": "srlm@srlm.io",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/srlmproductions/pilothouse/issues"
+  },
+  "homepage": "https://github.com/srlmproductions/pilothouse",
+  "dependencies": {
+    "load-grunt-tasks": "latest",
+    "mraa": "latest"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-shell": "latest"
+  }
+}
