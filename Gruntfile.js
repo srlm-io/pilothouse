@@ -17,7 +17,8 @@ module.exports = function (grunt) {
         shell: {
             deploy: {
                 // Make an exact copy of the current directory.
-                command: 'rsync -au --delete ./ pilothouse@ubilinux:pilothouse'
+                command: "rsync -au --verbose --delete --exclude 'node_modules' --exclude '.idea' --exclude '.git' ./ pilothouse@ubilinux:pilothouse " +
+                    '&&  ssh pilothouse@ubilinux "sudo /etc/init.d/pilothoused restart"'
             },
             install: {
                 command: ''

@@ -1,0 +1,6 @@
+{
+  "heartbeat": {
+    "interval": 500,
+    "pin": 14
+  }
+}

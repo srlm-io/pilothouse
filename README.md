@@ -13,4 +13,5 @@ Pilothouse is a project to build an autonomous sailboat using Node.js on the Int
 
 
 
-
+sudo visudo
+pilothouse ALL=(ALL) NOPASSWD: ALL

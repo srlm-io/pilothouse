@@ -24,7 +24,8 @@
   "homepage": "https://github.com/srlmproductions/pilothouse",
   "dependencies": {
     "load-grunt-tasks": "latest",
-    "mraa": "latest"
+    "mraa": "latest",
+    "nconf": "latest"
   },
   "devDependencies": {
     "grunt": "latest",
