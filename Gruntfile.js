@@ -5,13 +5,13 @@ module.exports = function (grunt) {
 
     grunt.initConfig({
         jshint: {
-            files: ['Gruntfile.js', 'index.js', 'src/**/*.js', 'test/**/*.js'],
+            files: ['Gruntfile.js', '*.js', 'src/**/*.js', 'test/**/*.js'],
             options: {
                 node: true
             }
         },
         watch: {
-            files: ['<%= jshint.files %>'],
+            files: ['<%= jshint.files %>', 'config.json'],
             tasks: ['jshint', 'shell:deploy']
         },
         shell: {

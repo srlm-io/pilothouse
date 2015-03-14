@@ -25,7 +25,14 @@
   "dependencies": {
     "load-grunt-tasks": "latest",
     "mraa": "latest",
-    "nconf": "latest"
+    "nconf": "latest",
+    "lodash": "latest",
+    "segfault-handler": "latest",
+    "async": "latest",
+    "hapi": "latest",
+    "hapi-swagger": "latest",
+    "joi": "latest",
+    "boom": "latest"
   },
   "devDependencies": {
     "grunt": "latest",

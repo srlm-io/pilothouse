@@ -2,5 +2,19 @@
   "heartbeat": {
     "interval": 500,
     "pin": 14
+  },
+  "windSensor": {
+    "bus": 1,
+    "address": 2,
+    "updateRate": 50
+  },
+  "servo": {
+    "bus": 1,
+    "address": 64,
+    "freq": 50,
+    "channels": {
+      "rudder": 0,
+      "sail": 1
+    }
   }
 }

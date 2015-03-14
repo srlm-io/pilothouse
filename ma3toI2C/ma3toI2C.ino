@@ -2,13 +2,10 @@
 
 #define I2C_ADDRESS 2
 
-
-#define INTERRUPT_PIN 3
-#define INTERRUPT_CHANNEL 0
-
+#define INTERRUPT_PIN 7
+#define INTERRUPT_CHANNEL 4
 
 // PWM taken from http://www.camelsoftware.com/firetail/blog/radio/reading-pwm-signals-from-a-remote-control-receiver-with-arduino/
-
 
 //micros when the pin goes HIGH
 volatile unsigned long timer_start;
@@ -43,22 +40,15 @@ void setup() {
   Wire.begin(I2C_ADDRESS);
   Wire.onRequest(requestEvent);
   Wire.onReceive(receiveEvent);
-
-
 }
 
 void loop() {
-  Serial.println(pulse_time);
-  delay(20);
 }
 
 void receiveEvent(int howMany) {
-  while (Wire.available() > 0) {
-     char c = Wire.read();
-  }
 }
 
 void requestEvent() {
-  Wire.write((short) pulse_time);
+  Wire.write((char *)&pulse_time, 2);
 }
 
