@@ -7,6 +7,8 @@ var nconf = require('nconf');
 var _ = require('lodash');
 var Boom = require('boom');
 
+var utilities = require('../utilities');
+
 var pwmAddress = nconf.get('servo:address');
 var pwmBus = nconf.get('servo:bus');
 var PCA9685 = {
@@ -72,7 +74,10 @@ function setup(doneCallback) {
 }
 
 
-module.exports.init = function (state, doneCallback) {
+
+
+
+module.exports.init = function (server, doneCallback) {
 
     var pwm;
 
@@ -81,15 +86,16 @@ module.exports.init = function (state, doneCallback) {
      * @param {Number} position 1000-2000
      * @param callback
      */
-    function setPosition(channel, position, callback) {
-        if (position > 2000 || position < 1000) {
-            callback(Boom.badData('Position "' + position + '" out of range'));
+    function setPosition(channel, position) {
+        if (position > 2500 || position < 500) {
+            server.log(['error'], Boom.badData('Position "' + position + '" out of range'));
             return;
         }
-        if (!_.has(state.servo, channel)) {
-            callback(Boom.badData('Channel "' + channel + '" not valid'));
-            return;
-        }
+
+        //if (!_.has(state.servo, channel)) {
+        //    server.log(['error'], Boom.badData('Channel "' + channel + '" not valid'));
+        //    return;
+        //}
 
         var t = Math.round(position / stepSize);
 
@@ -101,17 +107,41 @@ module.exports.init = function (state, doneCallback) {
         buffer[4] = (t >> 8) & 0x0F;
         pwm.write(buffer);
 
-        console.log(channel + ': ' + position);
-
-        state.servo[channel] = position;
-
-        callback(null);
     }
+
+    var result = {};
+
+    var rudderMap = utilities.createMap(
+        nconf.get('servo:rudder:minimumAngle'),
+        nconf.get('servo:rudder:maximumAngle'),
+        nconf.get('servo:rudder:minimumPulse'),
+        nconf.get('servo:rudder:maximumPulse'),
+        true // clipToBounds
+    );
+    result.setRudder = function (angle) {
+        setPosition('rudder', rudderMap(angle));
+    };
+    //result.setRudderRaw = function (value) {
+    //    setPosition('rudder', value);
+    //};
+
+    var sailMap = utilities.createMap(
+        nconf.get('servo:sail:minimumAngle'),
+        nconf.get('servo:sail:maximumAngle'),
+        nconf.get('servo:sail:minimumPulse'),
+        nconf.get('servo:sail:maximumPulse'),
+        true // clipToBounds
+    );
+    result.setSail = function (angle) {
+        setPosition('sail', sailMap(angle));
+    };
+    //result.setSailRaw = function (value) {
+    //    setPosition('sail', value);
+    //};
+
 
     setup(function (err, pwm_) {
         pwm = pwm_;
-        doneCallback(err, {
-            setPosition: setPosition
-        });
+        doneCallback(err, result);
     });
 };

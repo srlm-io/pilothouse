@@ -1,5 +1,8 @@
 #include <Wire.h>
 
+// Uncomment the next line to get a debugging serial port output.
+//#define SERIALOUT
+
 #define I2C_ADDRESS 2
 
 #define INTERRUPT_PIN 7
@@ -30,7 +33,10 @@ void calcSignal()
 }
 
 void setup() {
+
+#ifdef SERIALOUT
   Serial.begin(115200);
+#endif // serial
 
   // PWM
   timer_start = 0;
@@ -43,6 +49,10 @@ void setup() {
 }
 
 void loop() {
+#ifdef SERIALOUT
+  Serial.println(pulse_time);
+  delay(100);
+#endif // serial
 }
 
 void receiveEvent(int howMany) {

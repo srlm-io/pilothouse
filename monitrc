@@ -1,0 +1,15 @@
+## Start Monit in the background (run as a daemon):
+#
+  set daemon 5            # check services at 5 second intervals
+  # set logfile /var/log/monit.log
+  set httpd port 2812
+     allow admin:monit      # require user 'admin' with password 'monit'
+
+
+  check pilothoused
+  with pidfile /var/run/pilothoused.pid
+  start program = "/etc/init.d/pilothoused start"
+  stop program = "/etc/init.d/pilothoused stop"
+
+  if failed port 1337 protocol HTTP request / with timeout 10 seconds then restart
+  # if 3 restarts within 5 cycles then timeout

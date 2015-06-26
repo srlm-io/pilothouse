@@ -11,21 +11,69 @@ module.exports = function (grunt) {
             }
         },
         watch: {
-            files: ['<%= jshint.files %>', 'config.json'],
-            tasks: ['jshint', 'shell:deploy']
+            // Deploying and startup takes a long time, and why bother when it's
+            // just the web client that has changed?
+            localserver: {
+                options: {
+                    livereload: true,
+                    livereloadOnError: false,
+                    spawn: false // Faster, but more prone to watch failure
+                },
+                files: ['src/webclient/**/*'],
+                tasks: []
+            },
+            deployable: {
+                options: {
+                    spawn: false
+                },
+                files: ['<%= jshint.files %>', 'config.json', 'src/**/*', '!src/webclient/**/*'],
+                tasks: ['shell:deploy']
+            }
         },
         shell: {
             deploy: {
                 // Make an exact copy of the current directory.
                 command: "rsync -au --verbose --delete --exclude 'node_modules' --exclude '.idea' --exclude '.git' ./ pilothouse@ubilinux:pilothouse " +
-                    '&&  ssh pilothouse@ubilinux "sudo /etc/init.d/pilothoused restart"'
+                    //'&&  ssh pilothouse@ubilinux "sudo /etc/init.d/pilothoused restart"'
+                '&&  ssh pilothouse@ubilinux "sudo ./pilothouse/watchrun.sh"'
+
             },
             install: {
                 command: ''
             }
+        },
+
+        // For the Web client
+        wiredep: {
+            client: {
+                src: 'src/webclient/**/*.html'
+            }
+        },
+        connect: {
+            client: {
+                options: {
+                    port: 8080,
+                    base: 'src/webclient',
+                    livereload: true
+                }
+            }
+        },
+
+        wait: {
+            deploy: {
+                options: {
+                    delay: 1000 * 15,
+                    before: function (options) {
+                        console.log('pausing %dms', options.delay);
+                    },
+                    after: function () {
+                        console.log('pause end');
+                    }
+                }
+            }
         }
     });
 
-    grunt.registerTask('default', ['jshint']);
+    grunt.registerTask('run', ['connect:client', 'watch']);
 
 };

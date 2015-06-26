@@ -1,4 +1,7 @@
 {
+  "server": {
+    "port": 80
+  },
   "heartbeat": {
     "interval": 500,
     "pin": 14
@@ -15,6 +18,23 @@
     "channels": {
       "rudder": 0,
       "sail": 1
+    },
+    "rudder": {
+      "minimumPulse": 1088,
+      "maximumPulse": 1837,
+      "minimumAngle": -45,
+      "maximumAngle": 45
+    },
+    "sail": {
+      "minimumPulse": 952,
+      "maximumPulse": 1580,
+      "minimumAngle": 90,
+      "maximumAngle": 0
     }
+  },
+  "wind": {
+    "headUp": 736,
+    "minimumPulse": 0,
+    "maximumPulse": 1024
   }
 }
