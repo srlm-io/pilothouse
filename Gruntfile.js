@@ -13,25 +13,29 @@ module.exports = function (grunt) {
         watch: {
             // Deploying and startup takes a long time, and why bother when it's
             // just the web client that has changed?
-            localserver: {
+            client: {
                 options: {
                     livereload: true,
                     livereloadOnError: false,
                     spawn: false // Faster, but more prone to watch failure
                 },
                 files: ['src/webclient/**/*'],
-                tasks: []
+                tasks: ['shell:deployClient']
             },
-            deployable: {
+            server: {
                 options: {
                     spawn: false
                 },
                 files: ['<%= jshint.files %>', 'config.json', 'src/**/*', '!src/webclient/**/*'],
-                tasks: ['shell:deploy']
+                tasks: ['shell:deployServer']
             }
         },
         shell: {
-            deploy: {
+            deployClient: {
+                command: "rsync -au --verbose --delete src/webclient/ pilothouse@ubilinux:pilothouse/src/webclient"
+            },
+
+            deployServer: {
                 // Make an exact copy of the current directory.
                 command: "rsync -au --verbose --delete --exclude 'node_modules' --exclude '.idea' --exclude '.git' ./ pilothouse@ubilinux:pilothouse " +
                     //'&&  ssh pilothouse@ubilinux "sudo /etc/init.d/pilothoused restart"'

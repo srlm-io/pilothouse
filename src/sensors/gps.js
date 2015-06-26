@@ -70,6 +70,3 @@ module.exports.init = function (server) {
 module.exports.read = function (callback) {
     callback(null, state);
 };
-
-
-

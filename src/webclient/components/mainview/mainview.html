@@ -1,106 +1,111 @@
 <div class="row">
+    <div class="col-sm-6">
+        <boat state="state"></boat>
+    </div>
 
-    <boat state="state"></boat>
+    <div class="col-sm-6">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>{{state.time | date:'MMMM d, H:mm:ss.sss'}}</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Speed</h3>
+
+                <h3>{{state.gps.speed | number:2}} m/s</h3>
+            </div>
+            <div class="col-xs-6">
+                <h3>Sats</h3>
+
+                <h3>{{state.gps.satellites}}</h3>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Wind</h3>
+
+                <h3>{{state.wind.direction | number:1}}&deg;</h3>
+            </div>
+            <div class="col-xs-6">
+                <h3>Sail</h3>
+
+                <h3>{{state.output.sail}}&deg;</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Heading</h3>
+
+                <h3>{{state.gps.heading | number:1}}&deg;</h3>
+            </div>
+            <div class="col-xs-6">
+                <h3>HDOP</h3>
+
+                <h3>{{state.gps.hdop | number:2}} m</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Latitude</h3>
+
+                <h3>{{state.gps.latitude | number:5}}</h3>
+            </div>
+            <div class="col-xs-6">
+                <h3>Longitude</h3>
+
+                <h3>{{state.gps.longitude | number:5}}</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h3>Rudder</h3>
+
+                <h3>{{state.output.rudder}}&deg;</h3>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
-<div class="row">
-    <div class="col-xs-12">
-        <h1>{{state.time | date:'MMMM d, H:mm:ss.sss'}}</h1>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-sm-2">
-        <h3>Latitude</h3>
-
-        <h3>{{state.gps.latitude | number:5}}</h3>
-    </div>
-    <div class="col-sm-2">
-        <h3>Longitude</h3>
-
-        <h3>{{state.gps.longitude | number:5}}</h3>
-    </div>
-
-
-    <div class="col-sm-2">
-        <h3>Speed</h3>
-
-        <h3>{{state.gps.speed | number:2}}</h3>
-    </div>
-
-    <div class="col-sm-2">
-        <h3>HDOP</h3>
-
-        <h3>{{state.gps.hdop | number:2}}</h3>
-    </div>
-
-    <div class="col-sm-2">
-        <h3>Heading</h3>
-
-        <h3>{{state.gps.heading | number:1}}</h3>
-    </div>
-
-    <div class="col-sm-2">
-        <h3>Wind</h3>
-
-        <h3>{{state.wind.direction | number:1}}</h3>
-    </div>
-
-</div>
-<div class="row">
-    <div class="col-sm-2">
-        <h3>Sats</h3>
-
-        <h3>{{state.gps.satellites}}</h3>
-    </div>
-
-
-    <div class="col-sm-2">
-        <h3>Sail</h3>
-
-        <h3>{{state.output.sail}}</h3>
-    </div>
-
-    <div class="col-sm-2">
-        <h3>Rudder</h3>
-
-        <h3>{{state.output.rudder}}</h3>
-    </div>
-
-
-</div>
 <div class="row">
     <div class="col-sm-2">
         <h3>Accl X</h3>
 
-        <h3>{{state.orientation.acceleration.x | number:2}}</h3>
+        <h3>{{state.orientation.acceleration.x | number:2}} m/s<sup>2</sup></h3>
     </div>
     <div class="col-sm-2">
         <h3>Accl Y</h3>
 
-        <h3>{{state.orientation.acceleration.y | number:2}}</h3>
+        <h3>{{state.orientation.acceleration.y | number:2}} m/s<sup>2</sup></h3>
     </div>
     <div class="col-sm-2">
         <h3>Accl Z</h3>
 
-        <h3>{{state.orientation.acceleration.z | number:2}}</h3>
+        <h3>{{state.orientation.acceleration.z | number:2}} m/s<sup>2</sup></h3>
     </div>
 
 
     <div class="col-sm-2">
         <h3>Rot X</h3>
 
-        <h3>{{state.orientation.rotationRate.x | number:2}}</h3>
+        <h3>{{state.orientation.rotationRate.x | number:2}} &deg;/s</h3>
     </div>
     <div class="col-sm-2">
         <h3>Rot Y</h3>
 
-        <h3>{{state.orientation.rotationRate.y | number:2}}</h3>
+        <h3>{{state.orientation.rotationRate.y | number:2}} &deg;/s</h3>
     </div>
     <div class="col-sm-2">
         <h3>Rot Z</h3>
 
-        <h3>{{state.orientation.rotationRate.z | number:2}}</h3>
+        <h3>{{state.orientation.rotationRate.z | number:2}} &deg;/s</h3>
     </div>
 
 </div>

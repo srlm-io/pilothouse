@@ -41,6 +41,15 @@ sudo chmod 0700 /etc/monit/monitrc
 sudo apt-get install sqlite3
 
 
+
+# Taken from http://raspberrypi.stackexchange.com/a/5341
+sudo apt-get install ifplugd
+sudo mv /etc/ifplugd/action.d/ifupdown /etc/ifplugd/action.d/ifupdown.original
+sudo cp /etc/wpa_supplicant/ifupdown.sh /etc/ifplugd/action.d/ifupdown
+
+
+
+
 ```
 # Format an external USB disk
 sudo mkfs -t ext4 /dev/mmcblk1
@@ -105,28 +114,17 @@ network={
 	priority=1
 }
 
-
+# This file will allow the wifi to automatically reconnect and switch between networks
 $ sudo cat /etc/network/interfaces 
-# interfaces(5) file used by ifup(8) and ifdown(8)
-auto lo
-iface lo inet loopback
+auto lo 
 
-#auto usb0
-iface usb0 inet static
-    address 192.168.2.15
-    netmask 255.255.255.0
+iface lo inet loopback 
+iface eth0 inet dhcp 
 
-# SRLM changes 2015-06-15
-allow-hotplug wlan0
-auto wlan0
-iface wlan0 inet dhcp
-pre-up wpa_supplicant -Dwext -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf -B
-
-# And the following 4 lines are for when using hostapd...
-#auto wlan0
-#iface wlan0 inet static
-#    address 192.168.42.1
-#    netmask 255.255.255.0
+allow-hotplug wlan0 
+iface wlan0 inet manual 
+wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf 
+iface default inet dhcp
 
 
 ```
@@ -138,8 +136,69 @@ https://nims11.wordpress.com/2012/04/27/hostapd-the-linux-way-to-create-virtual-
 https://communities.intel.com/message/284453
 http://www.cyberciti.biz/faq/debian-ubuntu-linux-setting-wireless-access-point/
 
+-------------------------------------------------------------------------
 
 
 
+/etc/hostapd/hostapd.conf
+```
+# interface used by access point
+interface=wlan0
+
+# firmware driver
+driver=nl80211
+
+# access point SSID
+ssid=pilothouse
+
+# operation mode (a = IEEE 802.11a, b = IEEE 802.11b, g = IEEE 802.11g)
+hw_mode=g
+
+# access point channel
+channel=3
+
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+
+# key management algorithm
+wpa_key_mgmt=WPA-PSK
+wpa_passphrase=wsxedcrfv
+wpa=2
+
+# set ciphers
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+```
+
+/etc/default/hostapd
+```
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
+```
 
 
+
+Install:
+```
+sudo apt-get install hostapd zd1211-firmware dnsmasq
+sudo update-rc.d hostapd enable
+sudo update-rc.d dnsmasq enable
+
+```
+
+/etc/dnsmasq.conf
+```
+log-facility=/var/log/dnsmasq.log
+address=/#/172.16.0.1
+interface=wlan0
+dhcp-range=172.16.0.2,172.16.0.250,12h
+no-resolv
+no-hosts
+addn-hosts=/etc/hosts.dnsmasq
+log-queries
+```
+
+/etc/hosts.dnsmasq
+```
+172.16.0.1 ubilinux
+```

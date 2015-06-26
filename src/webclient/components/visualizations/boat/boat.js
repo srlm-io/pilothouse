@@ -9,8 +9,8 @@ angular
             templateUrl: '/components/visualizations/boat/boat.html',
             controller: function ($scope) {
                 $scope.graph = {
-                    width: 600,
-                    height: 600
+                    width: 550,
+                    height: 550
                 };
             }
         };

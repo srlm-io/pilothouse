@@ -146,42 +146,6 @@ require('./server').init(function (err, server) {
                 });
             });
 
-
-            //var Sequelize = require('sequelize');
-            //var sequelize = new Sequelize('', '', '', {
-            //    dialect: 'sqlite',
-            //    storage: '/media/flash/pilothouse.db',
-            //    logging: false
-            //});
-            //
-            //var State = sequelize.define('state', {
-            //    time: Sequelize.DATE,
-            //    latitude: Sequelize.DOUBLE,
-            //    longitude: Sequelize.DOUBLE,
-            //    speed: Sequelize.FLOAT,
-            //    hdop: Sequelize.FLOAT,
-            //    heading: Sequelize.DOUBLE,
-            //    satellites: Sequelize.INTEGER,
-            //    wind: Sequelize.INTEGER
-            //}, {
-            //    freezeTableName: true
-            //});
-
-            // sequelize.sync().then(function () {
-
-            //State.create({
-            //    time: state.time,
-            //    latitude: state.gps.latitude,
-            //    longitude: state.gps.longitude,
-            //    speed: state.gps.speed,
-            //    hdop: state.gps.hdop,
-            //    heading: state.gps.heading,
-            //    satellites: state.gps.satellites,
-            //    wind: state.wind
-            //});
-
-            var lastState = {};
-
             setInterval(function () {
                 sensors.getState(function (err, state) {
 
@@ -193,11 +157,7 @@ require('./server').init(function (err, server) {
                     output.setSail(state.output.sail);
                     output.setRudder(state.output.rudder);
 
-                    lastState = state;
-
                     io.emit('state', state);
-
-                    //wss.broadcast(state);
 
                     //printSensors(state);
 
