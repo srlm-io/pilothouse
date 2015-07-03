@@ -29,6 +29,60 @@ This project was inspired by my volunteer work with Diane at [RoboSail](http://w
 
 **Read the complete introduction to pilothouse [here](http://srlm.io/2015/07/02/introducing-pilothouse-a-robotic-sailboat/).**
 
+# BOM
+
+Total BOM cost is $1063.33.
+
+## Mechanical
+
+| Item | $/Unit | Qty | Total | Purchase |
+|------|--------|-----|-------|----------|
+| Ragazza 1 Meter Sailboat                                         | $349.99 | 1 | $349.99 | [src](http://www.proboatmodels.com/Products/Default.aspx?ProdID=PRB07000)               | 
+| Spectra 65lb test fishing line                                   | $39.30   | 1 | $39.30       | | 
+| Sugru                                                            | $21.38  | 2 | $42.76  | [src](http://www.amazon.com/gp/product/B00EU7DBNM/)                                     | 
+| Pelican 1020 Case                                                | $11.95  | 1 | $11.95  | [src](http://www.amazon.com/gp/product/B001Q21Y0G/)                                     | 
+| Stainless Steel Round Rod 72”                                    | $7.89   | 1 | $7.89   | [src](http://www.amazon.com/gp/product/B000H9OPDW/)                                     | 
+| Stainless Steel Fender Washer, 50                                | $6.20    | 1 | $6.20    | [src](http://www.amazon.com/gp/product/B009OL3BSY/)                                     | 
+| Stainless Steel Knurled Nut, #8-32                               | $3.91   | 4 | $15.64  | [src](http://www.amazon.com/gp/product/B00GKYUJWE/)                                     | 
+| Stainless Steel Machine Screw, 1”, #8-32, 100                    | $7.26   | 1 | $7.26   | [src](http://www.amazon.com/gp/product/B00918BJHU/)                                     | 
+| Wind Indicator                                                   | $13.90   | 1 | $13.90   | [src](http://www.orgsites.com/oh/western-reserve-model-yacht-club/Wind%20Indicator.pdf) | 
+| LED Holder (panel)                                               | $0.50    | 5 | $2.50    | [src](https://www.sparkfun.com/products/11147)                                          | 
+| 303 Stainless Steel Tight-Tolerance Rod, 1/16" Diameter, 2' Long | $6.35   | 2 | $12.70   | [src](http://www.mcmaster.com/)                                                         | 
+| Elastic Cord                                                     | $1.49   | 1 | $1.49   |                                                                                  | 
+| Steel Rings, 3/4” diameter                                       | $1.49   | 3 | $4.47   | | 
+| Thumb Nuts, #8-32, plastic shell, brass insert                   | $4.39   | 4 | $17.56  | | 
+| **Subtotal** |  |  | **$533.61** | | 
+
+
+## Electronics
+
+| Item | $/Unit | Qty | Total | Purchase |
+|------|--------|-----|-------|----------|
+| Intel Edison                                                     | $49.95  | 1 | $49.95  | [src](https://www.sparkfun.com/products/13024)                                          | 
+| UBLOX NEO-M8N GPS                                                | $79.99  | 1 | $79.99  | [src](http://www.csgshop.com/product.php?id_product=174)                                | 
+| Rotary Encoder, MA3-P10-125-B                                    | $66.75  | 1 | $66.75  | [src](http://www.usdigital.com/products/encoders/absolute/rotary/shaft/ma3)             | 
+| USB Micro B Panel Mount Extension Cable, M-F, 1ft                | $9.95   | 4 | $39.80   | [src](http://www.datapro.net/products/usb-micro-b-panel-mount-extension-cable-m-f.html) | 
+| Encoder plug and wire, 6 feet CA-MIC3-W3-NC-6                    | $9.30    | 1 | $9.30    | [src](http://www.usdigital.com/products/encoders/absolute/rotary/shaft/MA3)             | 
+| LiPo Battery, 2000mAh                                            | $12.95  | 2 | $25.90   | [src](https://www.sparkfun.com/products/8483)                                           | 
+| JST Jumper 2 Wire Assembly                                       | $0.95   | 2 | $1.90    | [src](https://www.sparkfun.com/products/9914)                                           | 
+| SparkFun LiPo Charger Basic Micro USB                            | $7.95   | 2 | $15.90   | [src](https://www.sparkfun.com/products/10217)                                          | 
+| LiPower Boost Converter                                          | $14.95  | 1 | $14.95  | [src](https://www.sparkfun.com/products/10255)                                          | 
+| SparkFun LiPo Fuel Gauge                                         | $9.95   | 2 | $19.90   | [src](https://www.sparkfun.com/products/10617)                                          | 
+| SparkFun Level Translator Breakout PCA9306                       | $6.95   | 1 | $6.95   | [src](https://www.sparkfun.com/products/11955)                                          | 
+| Pro Micro 5V/16MHz                                               | $19.95  | 1 | $19.95  | [src](https://www.sparkfun.com/products/12640)                                          | 
+| SparkFun Block 9 DOF                                             | $34.95  | 1 | $34.95  | [src](https://www.sparkfun.com/products/13033)                                          | 
+| SparkFun Block I2C                                               | $14.95  | 1 | $14.95  | [src](https://www.sparkfun.com/products/13034)                                          | 
+| SparkFun Block GPIO                                              | $14.95  | 1 | $14.95  | [src](https://www.sparkfun.com/products/13038)                                          | 
+| SparkFun Block microSD                                           | $19.95  | 1 | $19.95  | [src](https://www.sparkfun.com/products/13041)                                          | 
+| SparkFun Block PWM                                               | $19.95  | 1 | $19.95  | [src](https://www.sparkfun.com/products/13042)                                          | 
+| SparkFun Block Base                                              | $32.95  | 1 | $32.95  | [src](https://www.sparkfun.com/products/13045)                                          | 
+| Edison Hardware Pack                                             | $2.95   | 3 | $8.85   | [src](https://www.sparkfun.com/products/13187)                                          | 
+| 32GB USB SD Card                                                 | $13.99  | 1 | $13.99  | [src](http://www.amazon.com/gp/product/B00M55C0NS)                                      | 
+| 4 Channel RC Multiplexer                                         | $9.95   | 1 | $9.95   | [src](https://www.pololu.com/product/2806)                                              | 
+| Full Size Rasberry Pi Perma Board Project board                  | $7.99   | 1 | $7.99   | [src](http://www.mcmelectronics.com/product/ADAFRUIT-INDUSTRIES-1135-/28-17466)         | 
+| **Subtotal** |  |  | **$529.72** | | 
+
+
 # Setup Notes
 
 Below you'll find some assorted notes on setting up the system. At some point they'll get properly organized.
