@@ -19,7 +19,7 @@
               ng-attr-width="{{graph.width}}"
               ng-attr-height="{{graph.height}}"></rect>
 
-        <g ng-attr-transform="translate({{graph.width/2}}, {{graph.height/2}}) scale(1) rotate({{state.gps.heading}})">
+        <g ng-attr-transform="translate({{graph.width/2}}, {{graph.height/2}}) scale(1) rotate(-{{state.wind.direction}})">
 
             <g transform="scale(2) translate(0, -50)">
                 <path d="m 0,0 c -5.653467994,6.22241 -12.035712494,37.91001 -11.999999494,65 0.03571,27.08998 2.1997805,33.73994 2.9999995,34.5 0.800218,0.76006 8.999999994,0.5 8.999999994,0.5 m -1.48994e-4,-100 c 5.653468,6.22241 12.0357135,37.91001 12.0000005,65 -0.03571,27.08998 -2.1997815,33.73994 -3.0000005,34.5 -0.800218,0.76006 -9,0.5 -9,0.5"

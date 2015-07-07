@@ -124,6 +124,9 @@ function mapWindToSail(windDirection) {
     return result;
 }
 
+var currentCommand = 'manual tack';
+var currentSetpoint = 90;
+
 require('./server').init(function (err, server) {
     require('./output').init(server, function (err, output) {
         if (err) {
@@ -134,6 +137,7 @@ require('./server').init(function (err, server) {
                 server.log(['error'], 'Sensors error: ' + err);
             }
 
+            server.log(['info'], 'Sensors initialized');
 
             var http = require('http');
             var socketServer = http.createServer().listen(3000);
@@ -144,15 +148,53 @@ require('./server').init(function (err, server) {
                 socket.on('disconnect', function () {
                     server.log(['debug'], 'socket.io user disconnected');
                 });
+
+                socket.on('set manual tack', function (newSetpoint) {
+                    server.log(['debug'], 'Got new manual tack setpoint: ' + newSetpoint);
+                    currentCommand = 'manual tack';
+                    currentSetpoint = newSetpoint;
+                });
             });
 
-            setInterval(function () {
+            server.log(['info'], 'Socket.io initialized');
+
+            function calculateRudder(state){
+
+                var error = state.wind.direction - state.setpoint;
+
+                if (error < (state.setpoint - 180)) {
+                    error += 180;
+                }
+
+                var kP = 1;
+
+                state.output.rudder = kP * error;
+
+                if (state.output.rudder > 45) {
+                    state.output.rudder = 45;
+                } else if (state.output.rudder < -45) {
+                    state.output.rudder = -45;
+                }
+            }
+
+            function controlLoop() {
                 sensors.getState(function (err, state) {
 
+                    state.command = currentCommand;
+
                     state.output = {
-                        sail: mapWindToSail(state.wind.direction),
-                        rudder: 0
+                        sail: mapWindToSail(state.wind.direction)
                     };
+
+                    if (currentCommand === 'manual tack') {
+                        state.setpoint = currentSetpoint;
+                        calculateRudder(state);
+
+                    } else { //(currentCommand === 'hold') {
+                        state.setpoint = null;
+                        state.output.rudder = 0;
+                    }
+
 
                     output.setSail(state.output.sail);
                     output.setRudder(state.output.rudder);
@@ -161,8 +203,13 @@ require('./server').init(function (err, server) {
 
                     //printSensors(state);
 
+                    setTimeout(controlLoop, 100);
+
                 });
-            }, 200);
+            }
+
+            setTimeout(controlLoop, 400);
+
         });
     });
 });

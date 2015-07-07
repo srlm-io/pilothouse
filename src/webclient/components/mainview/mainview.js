@@ -26,7 +26,19 @@ angular.module('pilothouse.mainview', [
             }
 
             $scope.state = state;
+
+
+
         });
+
+
+        $scope.tackAngle = 0;
+
+        $scope.setTackAngle = function(){
+          console.log('Setting tack angle to ' + $scope.tackAngle);
+
+            socket.emit('set manual tack', $scope.tackAngle);
+        };
 
         $scope.message = 'Hello, again!';
 

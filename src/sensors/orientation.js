@@ -4,6 +4,7 @@
 var mraa = require('mraa');
 var Boom = require('boom');
 var async = require('async');
+var nconf = require('nconf');
 
 
 var registers = {
@@ -82,9 +83,32 @@ var gyroAddr = 0x6B;
 var updateRate = 100; // Hz
 var intervalRate = Math.floor(1000 / updateRate);
 
+var RAD_CONV = 57.2957; // 180/Pi, to convert radians to degrees
+
+
+function calculateOriention(state) {
+
+    // Freescale solution
+    var roll = Math.atan2(state.acceleration.y, state.acceleration.z);
+    var pitch = Math.atan(-state.acceleration.x / Math.sqrt(Math.pow(state.acceleration.y, 2) + Math.pow(state.acceleration.z, 2)));
+
+    var magn_fy_fs = state.magneticField.z * Math.sin(roll) - state.magneticField.y * Math.cos(roll);
+    var magn_fx_fs = state.magneticField.x * Math.cos(pitch) +
+        state.magneticField.y * Math.sin(pitch) * Math.sin(roll) +
+        state.magneticField.z * Math.sin(pitch) * Math.cos(roll);
+
+    var yaw = Math.atan2(magn_fy_fs, magn_fx_fs);
+
+    state.rawroll = roll * RAD_CONV;
+    state.rawpitch = pitch * RAD_CONV;
+    state.rawyaw = yaw * RAD_CONV;
+
+    state.roll = state.rawroll - nconf.get('orientation:staticOffset:roll');
+    state.pitch = state.rawpitch - nconf.get('orientation:staticOffset:pitch');
+    state.yaw = state.rawyaw - nconf.get('orientation:staticOffset:yaw');
+}
+
 module.exports.init = function (server) {
-
-
     var sensorStatus = {};
 
     function init(callback) {
@@ -181,14 +205,53 @@ module.exports.init = function (server) {
             });
         }
 
+
+        var magnRawRange = {
+            x: {
+                min: Number.MAX_VALUE,
+                max: Number.MIN_VALUE
+            },
+            y: {
+                min: Number.MAX_VALUE,
+                max: Number.MIN_VALUE
+            },
+            z: {
+                min: Number.MAX_VALUE,
+                max: Number.MIN_VALUE
+            }
+        };
+
+        function setRange(value, range) {
+            if (value < range.min) {
+                range.min = value;
+            }
+
+            if (value > range.max) {
+                range.max = value;
+            }
+        }
+
         function readMagn(callback) {
             var buffer = acclmagn.readBytesReg(registers.acclmagn.OUT_X_L_M, 6);
 
-            callback(null, {
-                x: buffer.readInt16LE(0) * constant.magn.bitWeight,
-                y: buffer.readInt16LE(2) * constant.magn.bitWeight,
-                z: buffer.readInt16LE(4) * constant.magn.bitWeight
-            });
+            var result = {
+                rawx: buffer.readInt16LE(0) * constant.magn.bitWeight,
+                rawy: buffer.readInt16LE(2) * constant.magn.bitWeight,
+                rawz: buffer.readInt16LE(4) * constant.magn.bitWeight
+            };
+
+
+            setRange(result.rawx, magnRawRange.x);
+            setRange(result.rawy, magnRawRange.y);
+            setRange(result.rawz, magnRawRange.z);
+
+            result.x = result.rawx - nconf.get("magnetometer:hardiron:x");
+            result.y = result.rawy - nconf.get("magnetometer:hardiron:y");
+            result.z = result.rawz - nconf.get("magnetometer:hardiron:z");
+
+            result.range = magnRawRange;
+
+            callback(null, result);
         }
 
         // -------------------------------------------------------------------------
@@ -229,9 +292,12 @@ module.exports.init = function (server) {
             readFunctions.push(createErrorHandler('magneticField', readMagn));
         }
 
+        module.exports.calibrateGyro = calibrateGyro;
+
         module.exports.read = function (cb) {
             async.series(readFunctions,
                 function (err) {
+                    calculateOriention(state);
                     cb(err, state);
                 });
         };

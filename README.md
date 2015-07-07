@@ -204,6 +204,25 @@ sudo iwconfig
 
 ## Setting up the Edison for hotspot WiFi
 
+```bash
+sudo apt-get install hostapd zd1211-firmware dnsmasq
+```
+
+
+file `/etc/network/interfaces`
+
+```
+auto lo
+
+iface lo inet loopback
+iface eth0 inet dhcp
+
+iface wlan0 inet static
+address 172.16.0.1
+netmask 255.255.255.0
+```
+
+
 file `/etc/hostapd/hostapd.conf`
 
 ```
@@ -265,7 +284,6 @@ file `/etc/hosts.dnsmasq`
 Commands to setup hotspot:
 
 ```bash
-sudo apt-get install hostapd zd1211-firmware dnsmasq
 sudo update-rc.d hostapd enable
 sudo update-rc.d dnsmasq enable
 
@@ -277,6 +295,93 @@ sudo update-rc.d dnsmasq enable
 
 `sudo iwconfig`: list WiFi strength 
 
+
+## Setting up Edison for WiFI client on boot with fallback to Hotspot
+
+Still in development...
+
+
+file `/etc/network/interfaces`
+
+```
+# start interfaces upon start of the system
+auto lo wlan0
+ 
+# register loopback interface
+iface lo inet loopback
+
+# use manual ip configuration for wlan0 interface and allow hotplug as well
+allow-hotplug wlan0
+iface wlan0 inet manual
+```
+
+file `/etc/rc.local`
+
+```
+#!/bin/bash
+
+# Disable the Edison's watchdog.
+echo 1 >/sys/devices/virtual/misc/watchdog/disable
+
+# Based on http://lcdev.dk/2012/11/18/raspberry-pi-tutorial-connect-to-wifi-or-create-an-encrypted-dhcp-enabled-ad-hoc-network-as-fallback/
+
+# RPi Network Conf Bootstrapper
+ 
+createAdHocNetwork(){
+    echo "Creating ad-hoc network"
+    #ifconfig wlan0 down
+    #iwconfig wlan0 mode ad-hoc
+    #iwconfig wlan0 key aaaaa11111 #WEP key
+    #iwconfig wlan0 essid RPi      #SSID
+    #ifconfig wlan0 10.0.0.200 netmask 255.255.255.0 up
+    #/usr/sbin/dhcpd wlan0
+    echo "Ad-hoc network created"
+}
+ 
+echo "================================="
+echo "Pilothouse WiFi Boot Setup"
+echo "================================="
+echo "Scanning for known WiFi networks"
+
+echo "Attempting to connect to WiFi"
+wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null 2>&1
+
+if dhclient -1 wlan0
+then
+    echo "Connected to WiFi"
+else
+    echo "DHCP server did not respond with an IP lease (DHCPOFFER)"
+    wpa_cli terminate
+    createAdHocNetwork
+fi
+ 
+exit 0
+```
+
 ## Webclient Port
 
 Served on port 80 directly. We're already running as root, so why not?
+
+
+
+
+
+## Manually Switch between connection and hotspot
+
+Switch to client
+```
+sudo update-rc.d hostapd disable
+sudo update-rc.d dnsmasq disable
+sudo rm /etc/network/interfaces
+sudo ln -s /etc/network/interfaces.client /etc/network/interfaces
+sudo reboot
+```
+
+Switch to hotspot
+```
+sudo update-rc.d hostapd enable
+sudo update-rc.d dnsmasq enable
+sudo rm /etc/network/interfaces
+sudo ln -s /etc/network/interfaces.hotspot /etc/network/interfaces
+sudo reboot
+```

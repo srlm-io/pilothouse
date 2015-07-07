@@ -6,7 +6,7 @@
     <div class="col-sm-6">
         <div class="row">
             <div class="col-xs-12">
-                <h2>{{state.time | date:'MMMM d, H:mm:ss.sss'}}</h2>
+                <h2>{{state.time | date:'MMMM d, H:mm:ss.sss'}} - {{state.command}}</h2>
             </div>
         </div>
 
@@ -21,7 +21,6 @@
 
                 <h3>{{state.gps.satellites}}</h3>
             </div>
-
         </div>
 
         <div class="row">
@@ -65,7 +64,18 @@
             <div class="col-xs-6">
                 <h3>Rudder</h3>
 
-                <h3>{{state.output.rudder}}&deg;</h3>
+                <h3>{{state.output.rudder | number:1}}&deg;</h3>
+            </div>
+            <div class="col-xs-6">
+                <h3>Setpoint</h3>
+                <h3>{{state.setpoint}}</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <input class="form-control" type="number" min="0" max="360" ng-model="tackAngle"/>
+                <button class="btn btn-default" ng-click="setTackAngle()">Set</button>
             </div>
         </div>
 
@@ -73,40 +83,60 @@
 
 </div>
 
-
 <div class="row">
-    <div class="col-sm-2">
-        <h3>Accl X</h3>
+    <table class="table table-condensed">
 
-        <h3>{{state.orientation.acceleration.x | number:2}} m/s<sup>2</sup></h3>
-    </div>
-    <div class="col-sm-2">
-        <h3>Accl Y</h3>
-
-        <h3>{{state.orientation.acceleration.y | number:2}} m/s<sup>2</sup></h3>
-    </div>
-    <div class="col-sm-2">
-        <h3>Accl Z</h3>
-
-        <h3>{{state.orientation.acceleration.z | number:2}} m/s<sup>2</sup></h3>
-    </div>
-
-
-    <div class="col-sm-2">
-        <h3>Rot X</h3>
-
-        <h3>{{state.orientation.rotationRate.x | number:2}} &deg;/s</h3>
-    </div>
-    <div class="col-sm-2">
-        <h3>Rot Y</h3>
-
-        <h3>{{state.orientation.rotationRate.y | number:2}} &deg;/s</h3>
-    </div>
-    <div class="col-sm-2">
-        <h3>Rot Z</h3>
-
-        <h3>{{state.orientation.rotationRate.z | number:2}} &deg;/s</h3>
-    </div>
-
+        <thead>
+        <tr>
+            <th>Sensor</th>
+            <th>x</th>
+            <th>y</th>
+            <th>z</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row">orientation</th>
+            <td>{{state.orientation.roll | number:2}} &deg;</td>
+            <td>{{state.orientation.pitch | number:2}} &deg;</td>
+            <td>{{state.orientation.yaw | number:2}} &deg;</td>
+        </tr>
+        <tr>
+            <th scope="row">acceleration</th>
+            <td>{{state.orientation.acceleration.x | number:2}} m/s<sup>2</sup></td>
+            <td>{{state.orientation.acceleration.y | number:2}} m/s<sup>2</sup></td>
+            <td>{{state.orientation.acceleration.z | number:2}} m/s<sup>2</sup></td>
+        </tr>
+        <tr>
+            <th scope="row">rotation rate</th>
+            <td>{{state.orientation.rotationRate.x | number:2}} &deg;/s</td>
+            <td>{{state.orientation.rotationRate.y | number:2}} &deg;/s</td>
+            <td>{{state.orientation.rotationRate.z | number:2}} &deg;/s</td>
+        </tr>
+        <tr>
+            <th scope="row">magn raw min</th>
+            <td>{{state.orientation.magneticField.rawx | number:4}}</td>
+            <td>{{state.orientation.magneticField.rawy | number:4}}</td>
+            <td>{{state.orientation.magneticField.rawz | number:4}}</td>
+        </tr>
+        <tr>
+            <th scope="row">magn raw min</th>
+            <td>{{state.orientation.magneticField.range.x.min | number:4}}</td>
+            <td>{{state.orientation.magneticField.range.y.min | number:4}}</td>
+            <td>{{state.orientation.magneticField.range.z.min | number:4}}</td>
+        </tr>
+        <tr>
+            <th scope="row">magn raw max</th>
+            <td>{{state.orientation.magneticField.range.x.max | number:4}}</td>
+            <td>{{state.orientation.magneticField.range.y.max | number:4}}</td>
+            <td>{{state.orientation.magneticField.range.z.max | number:4}}</td>
+        </tr>
+        <tr>
+            <th scope="row">magn raw avg (hardiron)</th>
+            <td>{{(state.orientation.magneticField.range.x.max + state.orientation.magneticField.range.x.min)/2 | number:4}}</td>
+            <td>{{(state.orientation.magneticField.range.y.max + state.orientation.magneticField.range.y.min)/2 | number:4}}</td>
+            <td>{{(state.orientation.magneticField.range.z.max + state.orientation.magneticField.range.z.min)/2 | number:4}}</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
-
