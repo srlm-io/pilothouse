@@ -1,0 +1,21 @@
+<h1>Calibration</h1>
+
+<div class="row col-xs-12">
+    <h2>Servo: Rudder</h2>
+</div>
+
+<div class="row">
+    <div class="col-xs-9">
+        <rzslider
+                rz-slider-model="calibrations.rudder.low"
+                rz-slider-high="calibrations.rudder.high"
+                rz-slider-options="constants.rudder"></rzslider>
+    </div>
+    <div class="col-xs-3">
+        <div class="input-group">
+            <span class="input-group-addon">Current</span>
+            <input type="text" class="form-control" ng-model="state.output.rudder.raw">
+        </div>
+    </div>
+</div>
+

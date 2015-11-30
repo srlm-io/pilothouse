@@ -1,0 +1,9 @@
+[Unit]
+Description=Pilothouse robotic sailboat daemon
+
+[Service]
+ExecStart=/usr/local/bin/node /home/root/pilothouse/src/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=basic.target

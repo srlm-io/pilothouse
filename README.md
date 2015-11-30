@@ -88,50 +88,39 @@ Total BOM cost is $1063.33.
 Below you'll find some assorted notes on setting up the system. At some point they'll get properly organized.
 
 
-## Intel Edison (Ubilinux)
+## Intel Edison (Yocto Image)
 
+Install a Yocto image on your Edison.
 
-```bash
-# We don't really want to put in a password for every sudo...
-sudo visudo
-pilothouse ALL=(ALL) NOPASSWD: ALL
+From serial console run `configure_edison --setup`. Choose `pilothouse` for the name.
 
-# Build and install the latest version of node
-wget http://nodejs.org/dist/v0.12.5/node-v0.12.5.tar.gz
-tar -zxf node-v0.12.5.tar.gz
-cd node-v0.12.5
-./configure && make -j 3 && sudo make install
-cd /usr/bin
-sudo ln -s /usr/local/bin/node
+Then, from the pilothouse repository on your development computer, run `provision.sh`. Make sure that you are on the same network as your Edison (`pilothouse.local`).
 
-# Create a daemon for pilothouse
-cd /etc/init.d
-sudo ln -s ~/pilothouse/pilothoused
-cd ~
+## Useful Commands
 
-# And a monitoring system to make sure it stays up
-sudo apt-get install monit
-sudo rm /etc/monit/monitrc
-sudo cp /home/pilothouse/pilothouse/monitrc /etc/monit
-sudo chown root:root /etc/monit/monitrc
-sudo chmod 0700 /etc/monit/monitrc
+Analyze startup speed:
+systemd-analyze blame
 
-# We'll need a place to store our data logs
-sudo apt-get install sqlite3
+# systemctl start [name.service]
+# systemctl stop [name.service]
+# systemctl restart [name.service]
+# systemctl reload [name.service]
+$ systemctl status [name.service]
+# systemctl is-active [name.service]
+enable
+disable
 
+To see the logs:
 
-
-# Format an external USB disk
-sudo mkfs -t ext4 /dev/mmcblk1
-
-# Mount external USB disk
-sudo mkdir -p /media/flash
-sudo mount /dev/mmcblk1 /media/flash
-sudo chown -R ${USER}:${GROUP} /media/flash
-echo "/dev/mmcblk1 /media/flash ext4 defaults 1 2" | sudo tee -a /etc/fstab
+```
+journalctl -fu pilothouse
 ```
 
+If you don't see anything, then it's probably because the date/time on the board is not correct (no RTC battery backup). Get the correct date time with:
 
+```
+rdate wwv.nist.gov
+```
 
 ## Setting up the Arduino
 
@@ -142,57 +131,12 @@ This page has that library:
 
 Restart the IDE, and open up the `ma3toI2C.ino` file.
 
-## Setting up the Edison for client WiFi
+## Setting up the client
 
 ```
-# Automatically reconnect WiFi (as a client) if we loose connection
-# Taken from http://raspberrypi.stackexchange.com/a/5341
-sudo apt-get install ifplugd
-sudo mv /etc/ifplugd/action.d/ifupdown /etc/ifplugd/action.d/ifupdown.original
-sudo cp /etc/wpa_supplicant/ifupdown.sh /etc/ifplugd/action.d/ifupdown
-
+bower install
 ```
 
-Setting up interfaces this way will allow the wifi to automatically reconnect and switch between networks
-file `/etc/network/interfaces`
-
-```
-auto lo 
-
-iface lo inet loopback 
-iface eth0 inet dhcp 
-
-allow-hotplug wlan0 
-iface wlan0 inet manual 
-wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf 
-iface default inet dhcp
-```
-
-
-file `/etc/wpa_supplicant/wpa_supplicant.conf`
-
-```
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-
-network={
-	ssid="networkA"
-	psk="password"
-	priority=3
-}
-
-network={
-	ssid="networkB"
-	psk="password"
-	priority=2
-}
-
-network={
-	ssid="networkC"
-	psk="password"
-	priority=1
-}
-```
 
 ### Useful WiFi client commands
  
@@ -204,90 +148,6 @@ sudo iwconfig
 
 ## Setting up the Edison for hotspot WiFi
 
-```bash
-sudo apt-get install hostapd zd1211-firmware dnsmasq
-```
-
-
-file `/etc/network/interfaces`
-
-```
-auto lo
-
-iface lo inet loopback
-iface eth0 inet dhcp
-
-iface wlan0 inet static
-address 172.16.0.1
-netmask 255.255.255.0
-```
-
-
-file `/etc/hostapd/hostapd.conf`
-
-```
-# interface used by access point
-interface=wlan0
-
-# firmware driver
-driver=nl80211
-
-# access point SSID
-ssid=pilothouse
-
-# operation mode (a = IEEE 802.11a, b = IEEE 802.11b, g = IEEE 802.11g)
-hw_mode=g
-
-# access point channel
-channel=3
-
-macaddr_acl=0
-auth_algs=1
-ignore_broadcast_ssid=0
-
-# key management algorithm
-wpa_key_mgmt=WPA-PSK
-wpa_passphrase=wsxedcrfv
-wpa=2
-
-# set ciphers
-wpa_pairwise=TKIP
-rsn_pairwise=CCMP
-```
-
-file `/etc/default/hostapd`
-
-```
-DAEMON_CONF="/etc/hostapd/hostapd.conf"
-```
-
-
-file `/etc/dnsmasq.conf`
-
-```
-log-facility=/var/log/dnsmasq.log
-address=/#/172.16.0.1
-interface=wlan0
-dhcp-range=172.16.0.2,172.16.0.250,12h
-no-resolv
-no-hosts
-addn-hosts=/etc/hosts.dnsmasq
-log-queries
-```
-
-file `/etc/hosts.dnsmasq`
-
-```
-172.16.0.1 ubilinux
-```
-
-Commands to setup hotspot:
-
-```bash
-sudo update-rc.d hostapd enable
-sudo update-rc.d dnsmasq enable
-
-```
 
 ### Useful WiFi hotspot commands
 
