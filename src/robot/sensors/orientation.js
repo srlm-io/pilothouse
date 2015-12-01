@@ -99,223 +99,216 @@ function calculateOriention(state) {
     state.yaw = state.rawyaw - calibration.get('orientation.staticOffset.yaw');
 }
 
-module.exports.init = function (server) {
+module.exports.init = function (server, callback) {
     var sensorStatus = {};
+    var bus = i2c.openSync(1); //TODO magic number
 
-    function init(callback) {
-        var bus = i2c.openSync(1); //TODO magic number
-
-        if (bus.readByteSync(gyroAddr, registers.gyro.WHO_AM_I_G) !== 0xD4) {
-            server.log(['error'], new Boom.badImplementation('Gyro WHO_AM_I not found! Gyro attached?'));
-            sensorStatus.gyro = false;
-        } else {
-            server.log(['info'], 'Found gyro');
-            sensorStatus.gyro = true;
-        }
-
-        // -------------------------------------------------------------------------
-        // Helper
-        // -------------------------------------------------------------------------
-        function createSetup(deviceAddr, settings, registers) {
-            return function setupGyro(callback) {
-                async.eachSeries(Object.keys(settings), function (key, cb) {
-                    server.log(['info'], 'Setting ____ register ' + key + ' at 0x' + registers[key].toString(16) + ' to 0x' + settings[key].toString(16));
-                    bus.writeByteSync(deviceAddr, registers[key], settings[key]);
-                    cb(null);
-                }, callback);
-            };
-        }
-
-        // -------------------------------------------------------------------------
-        // Gyro
-        // -------------------------------------------------------------------------
-
-        function calibrateGyro(callback) {
-            server.log(['info'], 'calibrate gyro begin');
-            var count = 0;
-            var sum = {
-                x: 0,
-                y: 0,
-                z: 0
-            };
-            var interval = setInterval(function () {
-                count++;
-                readGyro(function (values) {
-                    sum.x += values.x;
-                    sum.y += values.y;
-                    sum.z += values.z;
-
-                    if (count >= updateRate) {
-                        clearInterval(interval);
-                        server.log(['info'], 'calibrate gyro end');
-
-                        calibration.set('gyro.offset.x', sum.x / count);
-                        calibration.set('gyro.offset.y', sum.y / count);
-                        calibration.set('gyro.offset.z', sum.z / count);
-
-                        server.log(['debug'], JSON.stringify(calibration.get('gyro.offset'), null, 4));
-
-                        callback(null);
-                    }
-                });
-            }, intervalRate);
-        }
-
-        function readGyro(callback) {
-            var buffer = new Buffer(6);
-            bus.readI2cBlock(gyroAddr, registers.gyro.OUT_X_L_G, 6, buffer, function (err, bytesRead, buffer) {
-                callback(null, {
-                    x: (buffer.readInt16LE(0) * constant.gyro.bitWeight) - calibration.get('gyro.offset.x'),
-                    y: (buffer.readInt16LE(2) * constant.gyro.bitWeight) - calibration.get('gyro.offset.y'),
-                    z: (buffer.readInt16LE(4) * constant.gyro.bitWeight) - calibration.get('gyro.offset.z')
-                });
-            });
-        }
-
-        // -------------------------------------------------------------------------
-        // Accelerometer, Magnetometer
-        // -------------------------------------------------------------------------
-
-        if (bus.readByteSync(acclAddr, registers.acclmagn.WHO_AM_I_XM) !== 0x49) {
-            server.log(['error'], new Boom.badImplementation('AcclMag WHO_AM_I not found! AcclMag attached?'));
-            sensorStatus.acclmagn = false;
-        } else {
-            server.log(['info'], 'Found acclmagn');
-            sensorStatus.acclmagn = true;
-        }
-
-        function readAccl(callback) {
-            var buffer = new Buffer(6);
-            bus.readI2cBlock(acclAddr, registers.acclmagn.OUT_X_L_A, 6, buffer, function (err, bytesRead, buffer) {
-                callback(null, {
-                    x: buffer.readInt16LE(0) * constant.accl.bitWeight,
-                    y: buffer.readInt16LE(2) * constant.accl.bitWeight,
-                    z: buffer.readInt16LE(4) * constant.accl.bitWeight
-                });
-            });
-        }
-
-
-        var magnRawRange = {
-            x: {
-                min: Number.MAX_VALUE,
-                max: Number.MIN_VALUE
-            },
-            y: {
-                min: Number.MAX_VALUE,
-                max: Number.MIN_VALUE
-            },
-            z: {
-                min: Number.MAX_VALUE,
-                max: Number.MIN_VALUE
-            }
-        };
-
-        function setRange(value, range) {
-            if (value < range.min) {
-                range.min = value;
-            }
-
-            if (value > range.max) {
-                range.max = value;
-            }
-        }
-
-        function readMagn(callback) {
-            var buffer = new Buffer(6);
-            bus.readI2cBlock(acclAddr, registers.acclmagn.OUT_X_L_M, 6, buffer, function (err, bytesRead, buffer) {
-
-                var result = {
-                    rawx: buffer.readInt16LE(0) * constant.magn.bitWeight,
-                    rawy: buffer.readInt16LE(2) * constant.magn.bitWeight,
-                    rawz: buffer.readInt16LE(4) * constant.magn.bitWeight
-                };
-
-
-                setRange(result.rawx, magnRawRange.x);
-                setRange(result.rawy, magnRawRange.y);
-                setRange(result.rawz, magnRawRange.z);
-
-                result.x = result.rawx - calibration.get("magnetometer.hardiron.x");
-                result.y = result.rawy - calibration.get("magnetometer.hardiron.y");
-                result.z = result.rawz - calibration.get("magnetometer.hardiron.z");
-
-                result.range = magnRawRange;
-
-                callback(null, result);
-            });
-        }
-
-        // -------------------------------------------------------------------------
-        // Setup
-        // -------------------------------------------------------------------------
-
-
-        var readFunctions = [];
-        var state = {};
-
-        function createErrorHandler(key, reader) {
-            return function (cb) {
-                try {
-                    reader(function (err, result) {
-                        state[key] = result;
-                        cb(null);
-                    });
-                } catch (e) {
-                    server.log(['error'], 'Failed to read ' + key + ', Error: ' + e);
-                    state[key] = {
-                        x: null,
-                        y: null,
-                        z: null
-                    };
-                    cb(null);
-                }
-            };
-        }
-
-        // Is the gyro good? If it is then we can read it.
-        if (sensorStatus.gyro === true) {
-            readFunctions.push(createErrorHandler('rotationRate', readGyro));
-        }
-
-        // Is the accl magn good? If it is then we can read it.
-        if (sensorStatus.acclmagn === true) {
-            readFunctions.push(createErrorHandler('acceleration', readAccl));
-            readFunctions.push(createErrorHandler('magneticField', readMagn));
-        }
-
-        module.exports.calibrateGyro = calibrateGyro;
-
-        //module.exports.read = function (cb) {
-        //    async.series(readFunctions,
-        //        function (err) {
-        //            calculateOriention(state);
-        //            cb(err, state);
-        //        });
-        //};
-
-
-        function task(globalState, callback) {
-            async.series(readFunctions,
-                function (err) {
-                    calculateOriention(state);
-                    globalState.orientation = _.cloneDeep(state);
-                    callback(err, globalState);
-                });
-        }
-
-        async.waterfall([
-            createSetup(gyroAddr, settings.gyro, registers.gyro),
-            //calibrateGyro,
-            createSetup(acclAddr, settings.acclmagn, registers.acclmagn)
-
-        ], function (err) {
-            server.log(['info'], 'Done configuring I2C mems');
-            callback(err, task);
-        });
-
-
+    if (bus.readByteSync(gyroAddr, registers.gyro.WHO_AM_I_G) !== 0xD4) {
+        server.log(['error'], new Boom.badImplementation('Gyro WHO_AM_I not found! Gyro attached?'));
+        sensorStatus.gyro = false;
+    } else {
+        server.log(['info'], 'Found gyro');
+        sensorStatus.gyro = true;
     }
 
-    return init;
+    // -------------------------------------------------------------------------
+    // Helper
+    // -------------------------------------------------------------------------
+    function createSetup(deviceAddr, settings, registers) {
+        return function setupGyro(callback) {
+            async.eachSeries(Object.keys(settings), function (key, cb) {
+                server.log(['info'], 'Setting ____ register ' + key + ' at 0x' + registers[key].toString(16) + ' to 0x' + settings[key].toString(16));
+                bus.writeByteSync(deviceAddr, registers[key], settings[key]);
+                cb(null);
+            }, callback);
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // Gyro
+    // -------------------------------------------------------------------------
+
+    function calibrateGyro(callback) {
+        server.log(['info'], 'calibrate gyro begin');
+        var count = 0;
+        var sum = {
+            x: 0,
+            y: 0,
+            z: 0
+        };
+        var interval = setInterval(function () {
+            count++;
+            readGyro(function (values) {
+                sum.x += values.x;
+                sum.y += values.y;
+                sum.z += values.z;
+
+                if (count >= updateRate) {
+                    clearInterval(interval);
+                    server.log(['info'], 'calibrate gyro end');
+
+                    calibration.set('gyro.offset.x', sum.x / count);
+                    calibration.set('gyro.offset.y', sum.y / count);
+                    calibration.set('gyro.offset.z', sum.z / count);
+
+                    server.log(['debug'], JSON.stringify(calibration.get('gyro.offset'), null, 4));
+
+                    callback(null);
+                }
+            });
+        }, intervalRate);
+    }
+
+    function readGyro(callback) {
+        var buffer = new Buffer(6);
+        bus.readI2cBlock(gyroAddr, registers.gyro.OUT_X_L_G, 6, buffer, function (err, bytesRead, buffer) {
+            callback(null, {
+                x: (buffer.readInt16LE(0) * constant.gyro.bitWeight) - calibration.get('gyro.offset.x'),
+                y: (buffer.readInt16LE(2) * constant.gyro.bitWeight) - calibration.get('gyro.offset.y'),
+                z: (buffer.readInt16LE(4) * constant.gyro.bitWeight) - calibration.get('gyro.offset.z')
+            });
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // Accelerometer, Magnetometer
+    // -------------------------------------------------------------------------
+
+    if (bus.readByteSync(acclAddr, registers.acclmagn.WHO_AM_I_XM) !== 0x49) {
+        server.log(['error'], new Boom.badImplementation('AcclMag WHO_AM_I not found! AcclMag attached?'));
+        sensorStatus.acclmagn = false;
+    } else {
+        server.log(['info'], 'Found acclmagn');
+        sensorStatus.acclmagn = true;
+    }
+
+    function readAccl(callback) {
+        var buffer = new Buffer(6);
+        bus.readI2cBlock(acclAddr, registers.acclmagn.OUT_X_L_A, 6, buffer, function (err, bytesRead, buffer) {
+            callback(null, {
+                x: buffer.readInt16LE(0) * constant.accl.bitWeight,
+                y: buffer.readInt16LE(2) * constant.accl.bitWeight,
+                z: buffer.readInt16LE(4) * constant.accl.bitWeight
+            });
+        });
+    }
+
+
+    var magnRawRange = {
+        x: {
+            min: Number.MAX_VALUE,
+            max: Number.MIN_VALUE
+        },
+        y: {
+            min: Number.MAX_VALUE,
+            max: Number.MIN_VALUE
+        },
+        z: {
+            min: Number.MAX_VALUE,
+            max: Number.MIN_VALUE
+        }
+    };
+
+    function setRange(value, range) {
+        if (value < range.min) {
+            range.min = value;
+        }
+
+        if (value > range.max) {
+            range.max = value;
+        }
+    }
+
+    function readMagn(callback) {
+        var buffer = new Buffer(6);
+        bus.readI2cBlock(acclAddr, registers.acclmagn.OUT_X_L_M, 6, buffer, function (err, bytesRead, buffer) {
+
+            var result = {
+                rawx: buffer.readInt16LE(0) * constant.magn.bitWeight,
+                rawy: buffer.readInt16LE(2) * constant.magn.bitWeight,
+                rawz: buffer.readInt16LE(4) * constant.magn.bitWeight
+            };
+
+
+            setRange(result.rawx, magnRawRange.x);
+            setRange(result.rawy, magnRawRange.y);
+            setRange(result.rawz, magnRawRange.z);
+
+            result.x = result.rawx - calibration.get("magnetometer.hardiron.x");
+            result.y = result.rawy - calibration.get("magnetometer.hardiron.y");
+            result.z = result.rawz - calibration.get("magnetometer.hardiron.z");
+
+            result.range = magnRawRange;
+
+            callback(null, result);
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // Setup
+    // -------------------------------------------------------------------------
+
+
+    var readFunctions = [];
+    var state = {};
+
+    function createErrorHandler(key, reader) {
+        return function (cb) {
+            try {
+                reader(function (err, result) {
+                    state[key] = result;
+                    cb(null);
+                });
+            } catch (e) {
+                server.log(['error'], 'Failed to read ' + key + ', Error: ' + e);
+                state[key] = {
+                    x: null,
+                    y: null,
+                    z: null
+                };
+                cb(null);
+            }
+        };
+    }
+
+    // Is the gyro good? If it is then we can read it.
+    if (sensorStatus.gyro === true) {
+        readFunctions.push(createErrorHandler('rotationRate', readGyro));
+    }
+
+    // Is the accl magn good? If it is then we can read it.
+    if (sensorStatus.acclmagn === true) {
+        readFunctions.push(createErrorHandler('acceleration', readAccl));
+        readFunctions.push(createErrorHandler('magneticField', readMagn));
+    }
+
+    module.exports.calibrateGyro = calibrateGyro;
+
+    //module.exports.read = function (cb) {
+    //    async.series(readFunctions,
+    //        function (err) {
+    //            calculateOriention(state);
+    //            cb(err, state);
+    //        });
+    //};
+
+
+    function task(globalState, callback) {
+        async.series(readFunctions,
+            function (err) {
+                calculateOriention(state);
+                globalState.orientation = _.cloneDeep(state);
+                callback(err, globalState);
+            });
+    }
+
+    async.waterfall([
+        createSetup(gyroAddr, settings.gyro, registers.gyro),
+        //calibrateGyro,
+        createSetup(acclAddr, settings.acclmagn, registers.acclmagn)
+
+    ], function (err) {
+        server.log(['info'], 'Done configuring I2C mems');
+        callback(err, task);
+    });
 };

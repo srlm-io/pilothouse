@@ -4,19 +4,15 @@ var config = require('../../settings/config');
 var calibration = require('../../settings/calibration');
 var i2c = require('i2c-bus');
 var utilities = require('../utilities');
-var bus;
 
 const bytesToRead = 2;
-var buffer = new Buffer(bytesToRead);
 
-module.exports.init = function (server) {
-    function init(callback) {
+module.exports.init = function (server, callback) {
 
-        server.log(['info'], 'Setting windsensor to bus ' + config.get('windSensor.bus') + ' and address ' + config.get('windSensor.address'));
-        bus = i2c.openSync(config.get('windSensor.bus'));
+    server.log(['info'], 'Setting windsensor to bus ' + config.get('windSensor.bus') + ' and address ' + config.get('windSensor.address'));
+    var bus = i2c.openSync(config.get('windSensor.bus'));
 
-        callback(null, task);
-    }
+    var buffer = new Buffer(bytesToRead);
 
     var windMap = utilities.createMap(
         calibration.get('wind.minimumPulse'),
@@ -53,5 +49,6 @@ module.exports.init = function (server) {
         });
     }
 
-    return init;
+    callback(null, task);
 };
+

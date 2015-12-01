@@ -3,21 +3,17 @@ var mission = require('../settings/mission');
 var async = require('async');
 const kIntervalTime = 250;
 
-function startWaterfall() {
-    function task(cb) { // Series task
-        function task(callback) { // Waterfall task
-            var state = {
-                time: (new Date()).getTime(),
-                mission: mission.get(),
-                output: {}
-            };
-            callback(null, state);
-        }
-
-        cb(null, task);
+function startWaterfall(cb) { // Series task
+    function task(callback) { // Waterfall task
+        var state = {
+            time: (new Date()).getTime(),
+            mission: mission.get(),
+            output: {}
+        };
+        callback(null, state);
     }
 
-    return task
+    cb(null, task);
 }
 
 var overrides = require('../settings/override');
@@ -38,24 +34,24 @@ function overrideTask(cb) {
 module.exports.init = function (server, initCB) {
 
     async.series([
-        startWaterfall(),
-        require('./sensors/wind').init(server),
-        require('./sensors/orientation').init(server),
-        require('./sensors/gps').init(server),
+        startWaterfall,
+        require('./sensors/wind').init.bind(this, server),
+        require('./sensors/orientation').init.bind(this, server),
+        require('./sensors/gps').init.bind(this, server),
         overrideTask,
-        require('./calculations/sail').init(server),
-        require('./calculations/rudder').init(server),
+        require('./calculations/sail').init.bind(this, server),
+        require('./calculations/rudder').init.bind(this, server),
         overrideTask,
-        require('./output/servo').init(server),
-        require('./output/heartbeat').init(server),
-        require('../server/sockets').init(server)
+        require('./output/servo').init.bind(this, server),
+        require('./output/heartbeat').init.bind(this, server),
+        require('../server/sockets').init.bind(this, server)
         //require('./other/logstate').init(server)
     ], function (err, tasks) {
         function loop() {
             async.waterfall(tasks, function (err, state) {
                 if (err) {
-                    console.log('Error: ' + err);
-                    // TODO Should it exit here?
+                    sever.log(['error'], 'Robot Loop Top Level Error: ' + err + '\n' + err.stack);
+                    process.exit(1);
                 } else {
                     setTimeout(loop, kIntervalTime)
                 }

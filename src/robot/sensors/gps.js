@@ -49,28 +49,24 @@ function processGPSLine(line) {
 }
 
 
-module.exports.init = function (server) {
-    function init(callback) {
+module.exports.init = function (server, callback) {
 
-        server.log(['info'], 'Opening GPS port');
+    server.log(['info'], 'Opening GPS port');
 
-        var gps = new SerialPort(config.get('gps.port'), {
-            baudrate: config.get('gps.baud'),
-            parser: serialport.parsers.readline('\r\n')
-        });
+    var gps = new SerialPort(config.get('gps.port'), {
+        baudrate: config.get('gps.baud'),
+        parser: serialport.parsers.readline('\r\n')
+    });
 
-        function task(globalState, callback){
-            globalState.gps = state;
-            callback(null, globalState);
-        }
-
-        gps.open(function(err){
-            gps.on('data', processGPSLine);
-            callback(err, task)
-        });
+    function task(globalState, callback) {
+        globalState.gps = state;
+        callback(null, globalState);
     }
 
-    return init;
+    gps.open(function (err) {
+        gps.on('data', processGPSLine);
+        callback(err, task)
+    });
 };
 
 module.exports.read = function (callback) {

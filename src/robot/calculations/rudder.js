@@ -1,6 +1,6 @@
 'use strict';
 
-function calculateRudder(state){
+function calculateRudder(state) {
 
     var error = state.wind.direction - state.setpoint;
 
@@ -19,17 +19,13 @@ function calculateRudder(state){
     }
 }
 
-module.exports.init = function (server) {
-    function calculateOutput(callback) {
-        function task(globalState, callback) {
-            globalState.output.rudder = {
-                angle: 0
-            };
-            callback(null, globalState);
-        }
-
-        callback(null, task);
+module.exports.init = function (server, callback) {
+    function task(globalState, callback) {
+        globalState.output.rudder = {
+            angle: 0
+        };
+        callback(null, globalState);
     }
 
-    return calculateOutput;
+    callback(null, task);
 };

@@ -5,10 +5,15 @@ angular.module('pilothouse.states.calibrate', [
         $stateProvider.state('calibrate', {
             url: '/calibrate',
             templateUrl: 'states/calibrate/calibrate.html',
-            controller: 'StateCalibrateCtrl'
+            controller: 'StateCalibrateCtrl',
+            resolve: {
+                calibration: function (api) {
+                    return api.calibrate.get();
+                }
+            }
         });
     })
-    .controller('StateCalibrateCtrl', function ($scope, lodash, socket) {
+    .controller('StateCalibrateCtrl', function ($scope, lodash, socket, api, lodash, calibration) {
 
         socket.on('state', function (state) {
             $scope.state = state;
@@ -21,23 +26,20 @@ angular.module('pilothouse.states.calibrate', [
             }
         };
 
-        $scope.calibrations = {
-            rudder: {
-                low: 1000,
-                high: 2000
-            }
-        };
+        $scope.calibration = calibration.data; //TODO fix .data
 
-        function servoChanged(name){
+        function servoChanged(name) {
             return function (newValue, oldValue) {
-                if(newValue !== oldValue) {
+                if (newValue !== oldValue) {
                     console.log('changed ' + name + ' to ' + newValue);
+                    api.override.set(name, newValue);
                 }
             }
         }
 
+        const scrollDelay = 500;
 
-        $scope.$watch('calibrations.rudder.low', servoChanged('rudder'));
-        $scope.$watch('calibrations.rudder.high', servoChanged('rudder'));
+        $scope.$watch('calibration.servo.rudder.minimumPulse', lodash.debounce(servoChanged('output.rudder.raw'), scrollDelay));
+        $scope.$watch('calibration.servo.rudder.maximumPulse', lodash.debounce(servoChanged('output.rudder.raw'), scrollDelay));
 
     });
