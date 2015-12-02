@@ -161,6 +161,7 @@ module.exports.init = function (server, callback) {
 
     function readGyro(callback) {
         var buffer = new Buffer(6);
+        //TODO: Buffer can be undefined in some situations (ok, saw it once)
         bus.readI2cBlock(gyroAddr, registers.gyro.OUT_X_L_G, 6, buffer, function (err, bytesRead, buffer) {
             callback(null, {
                 x: (buffer.readInt16LE(0) * constant.gyro.bitWeight) - calibration.get('gyro.offset.x'),

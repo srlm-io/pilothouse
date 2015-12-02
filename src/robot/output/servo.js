@@ -85,9 +85,9 @@ module.exports.init = function (server, doneCallback) {
         buffer[4] = (t >> 8) & 0x0F;
         bus.i2cWrite(pwmAddress, 5, buffer, function (err, bytesWritten) {
                 if (err) {
-                    callback(Boom.badImplementation(err));
+                    callback(err);
                 } else if (bytesWritten != 5) {
-                    callback(Boom.badImplementation('Should have written 5 bytes, instead wrote ' + bytesWritten));
+                    callback(Boom.badImplementation('Servo should have written 5 bytes, instead wrote ' + bytesWritten));
                 } else {
                     callback(null, position);
                 }
@@ -112,7 +112,7 @@ module.exports.init = function (server, doneCallback) {
         true // clipToBounds
     );
 
-    function task(globalState, callback) {
+    function task(globalState, callback, counter) {
         async.series([
             setPosition.bind(this, 'rudder',
                 globalState.output.rudder.raw || rudderMap(globalState.output.rudder.angle)),
@@ -120,7 +120,23 @@ module.exports.init = function (server, doneCallback) {
                 globalState.output.sail.raw || sailMap(globalState.output.sail.angle))
         ], function (err, results) {
             if (err) {
-                callback(err);
+                if (!counter) {
+                    counter = 1;
+                } else {
+                    counter += 1;
+                }
+
+                if (counter <= config.get('servo.i2cBusyRetryAttempts') &&
+                    err.code === 'EAGAIN') {
+                    server.log(['warning'], 'Servo write attempt #' + counter + ' failed after EAGIN i2c bus busy error, attempting retry.');
+                    setTimeout(task.bind(this, globalState, callback, counter),
+                        config.get('servo.i2cBusyRetryDelay'));
+                } else {
+                    // Timed out, pass back the error
+                    callback(err);
+                }
+
+
             } else {
                 globalState.output.rudder.raw = results[0];
                 globalState.output.sail.raw = results[1];

@@ -23,10 +23,14 @@ function save(object, filename) {
 }
 
 
-module.exports.get = function (object) {
+module.exports.get = function (object, nullForEmpty) {
     return function (path) {
         if (!path) { //top level object
-            return object;
+            if (nullForEmpty && _.isEmpty(object)) {
+                return null;
+            } else {
+                return object;
+            }
         } else {
             return _.get(object, path);
         }

@@ -10,7 +10,7 @@ function deleteProperties(objectToClean) {
     for (var x in objectToClean) if (objectToClean.hasOwnProperty(x)) delete objectToClean[x];
 }
 
-module.exports.get = generic.get(override);
+module.exports.get = generic.get(override, true);
 module.exports.set = generic.set(override);
 module.exports.reset = function () {
     deleteProperties(override);

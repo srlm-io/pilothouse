@@ -19,7 +19,9 @@ module.exports.init = function (server) {
             validate: {
                 payload: {
                     'servo.rudder.minimumPulse': Joi.number().integer().min(1000).max(2000).optional(),
-                    'servo.rudder.maximumPulse': Joi.number().integer().min(1000).max(2000).optional()
+                    'servo.rudder.maximumPulse': Joi.number().integer().min(1000).max(2000).optional(),
+                    'servo.sail.minimumPulse': Joi.number().integer().min(1000).max(2000).optional(),
+                    'servo.sail.maximumPulse': Joi.number().integer().min(1000).max(2000).optional()
                 }
             },
             tags: ['api'],

@@ -17,6 +17,8 @@ const config = {
         bus: 1,
         address: 64,
         freq: 50,
+        i2cBusyRetryDelay: 50,
+        i2cBusyRetryAttempts: 5,
         channels: {
             rudder: 0,
             sail: 1

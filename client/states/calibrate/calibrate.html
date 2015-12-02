@@ -1,20 +1,60 @@
 <h1>Calibration</h1>
 
+<div class="alert alert-success" role="alert" ng-if="showSuccess">
+    <strong>Success!</strong> Calibration saved.
+</div>
+
 <div class="row col-xs-12">
-    <h2>Servo: Rudder</h2>
+    <h2>Rudder</h2>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <rzslider
+                rz-slider-model="override.output.rudder.raw"
+                rz-slider-options="constants.rudder"></rzslider>
+    </div>
 </div>
 
 <div class="row">
-    <div class="col-xs-9">
+    <div class="col-xs-12">
         <rzslider
                 rz-slider-model="calibration.servo.rudder.minimumPulse"
                 rz-slider-high="calibration.servo.rudder.maximumPulse"
                 rz-slider-options="constants.rudder"></rzslider>
     </div>
-    <div class="col-xs-3">
-        <div class="input-group">
-            <span class="input-group-addon">Current</span>
-            <input type="text" class="form-control" ng-model="state.output.rudder.raw">
-        </div>
+</div>
+<div class="row">
+    <div class="col-xs-1 text-right">
+        <button class="btn btn-default" ng-click="calibration.servo.rudder.minimumPulse = override.output.rudder.raw">
+            <span class="glyphicon glyphicon glyphicon-log-in" aria-hidden="true"></span></button>
+    </div>
+    <div class="col-xs-1">
+        <input type="number" class="form-control form-inline" disabled
+               ng-model="calibration.servo.rudder.minimumPulse">
+    </div>
+    <div class="col-xs-8">
+    </div>
+    <div class="col-xs-1 text-right">
+        <button class="btn btn-default" ng-click="calibration.servo.rudder.maximumPulse = override.output.rudder.raw">
+            <span class="glyphicon glyphicon glyphicon-log-in" aria-hidden="true"></span></button>
+    </div>
+    <div class="col-xs-1">
+        <input type="number" class="form-control" disabled
+               ng-model="calibration.servo.rudder.maximumPulse">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-4 text-center">
+        <button class="btn btn-default" ng-click="clearOverride()">
+            Clear Overrides
+        </button>
+    </div>
+    <div class="col-xs-4 text-center">
+        <button class="btn btn-info" ng-click="saveCalibration()">
+            Save
+        </button>
     </div>
 </div>

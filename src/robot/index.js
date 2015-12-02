@@ -21,8 +21,8 @@ var _ = require('lodash');
 
 function overrideTask(cb) {
     function task(globalState, callback) {
-        console.dir(overrides.get());
         _.merge(globalState, overrides.get());
+        globalState.mission.override = overrides.get();
         callback(null, globalState);
     }
 
@@ -50,7 +50,7 @@ module.exports.init = function (server, initCB) {
         function loop() {
             async.waterfall(tasks, function (err, state) {
                 if (err) {
-                    sever.log(['error'], 'Robot Loop Top Level Error: ' + err + '\n' + err.stack);
+                    server.log(['error'], 'Robot Loop Top Level Error: ' + err + '\n' + err.stack);
                     process.exit(1);
                 } else {
                     setTimeout(loop, kIntervalTime)

@@ -8,7 +8,7 @@ var utilities = require('../utilities');
 const bytesToRead = 2;
 
 module.exports.init = function (server, callback) {
-
+    var errorReported = false;
     server.log(['info'], 'Setting windsensor to bus ' + config.get('windSensor.bus') + ' and address ' + config.get('windSensor.address'));
     var bus = i2c.openSync(config.get('windSensor.bus'));
 
@@ -29,13 +29,17 @@ module.exports.init = function (server, callback) {
         bus.i2cRead(config.get('windSensor.address'), bytesToRead, buffer, function (err, bytesRead, buffer) {
             if (err) {
                 if (err.errno === -121) {
-                    server.log(['error'], 'Wind sensor not responding. Is it powered on?')
+                    if (!errorReported) {
+                        errorReported = true;
+                        server.log(['error'], 'Wind sensor not responding. Is it powered on?')
+                    }
                 } else {
                     server.log(['error'], 'Error while reading windsensor: ' + err);
                 }
             } else if (bytesRead != bytesToRead) {
                 server.log(['error'], 'Expected to read ' + bytesToRead + ' bytes from windsensor, instead read ' + bytesRead + ' bytes.');
             } else {
+                errorReported = false;
                 result.raw = buffer.readInt16LE(0);
                 result.direction = windMap(result.raw - calibration.get('wind.headUp'));
 

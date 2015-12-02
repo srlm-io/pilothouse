@@ -9,9 +9,10 @@
     <title>Pilothouse Heads Up</title>
 
     <!-- bower:css -->
-    <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-    <link rel="stylesheet" href="bower_components/angularjs-slider/dist/rzslider.css" />
+    <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css"/>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css"/>
+    <link rel="stylesheet" href="bower_components/angularjs-slider/dist/rzslider.css"/>
     <!-- endbower -->
 
     <link rel="stylesheet" href="index.css"/>
@@ -39,13 +40,33 @@
                 <li><a ui-sref="dashboard">Dashboard</a></li>
                 <li><a ui-sref="calibrate">Calibrate</a></li>
             </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li ng-if="state.mission.override"><a href="#" class="navbar-link">
+                    <i class="fa fa-exclamation-triangle text-warning"></i>
+                    Overrides in effect
+                </a></li>
+                <li ng-if="!last_connected"><a href="#" class="navbar-link">Connected</a></li>
+                <li ng-if="last_connected"><a href="#" class="navbar-link">
+                    <i class="fa fa-exclamation-triangle text-warning"></i>
+                    <span am-time-ago="last_connected"></span>
+                </a></li>
+            </ul>
         </div>
+
         <!--/.nav-collapse -->
     </div>
 </nav>
 
 <div class="container-fluid">
     <br/><br/><br/><br/>
+
+    #######{{state.mission.override}}$$$$$$$$$$$$$$
+
+    <uib-alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">
+        <abbr ng-attr-title="{{alert.date| amUtc | amLocal | amDateFormat:'HH:mm:ss'}}"><span class="text-muted"
+                                                                                              am-time-ago="alert.date"></span></abbr>
+        {{alert.message}}
+    </uib-alert>
 
     <div ui-view></div>
 </div>
@@ -64,6 +85,8 @@
 <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
 <script src="bower_components/ng-lodash/build/ng-lodash.js"></script>
 <script src="bower_components/angularjs-slider/dist/rzslider.js"></script>
+<script src="bower_components/moment/moment.js"></script>
+<script src="bower_components/angular-moment/angular-moment.js"></script>
 <!-- endbower -->
 
 <!-- Needed to add this manually... -->
